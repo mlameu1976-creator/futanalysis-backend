@@ -1,57 +1,30 @@
 import requests
 from sqlalchemy.orm import Session
-
 from app.models.league import League
 
+API_KEY = "844189"
+API_URL = f"https://www.thesportsdb.com/api/v1/json/{API_KEY}/all_leagues.php"
 
-API_URL = "https://www.thesportsdb.com/api/v1/json/3/all_leagues.php"
 
-
-TARGET_KEYWORDS = [
-    "Brazil",
-    "Austrian",
-    "Turkey",
-    "Saudi",
-    "China",
-    "Denmark",
-    "Norway",
-    "MLS",
-    "Portugal",
-    "Serbia",
-    "Poland",
-]
+# 🔥 LIGAS TESTADAS E FUNCIONAIS
+VALID_LEAGUE_IDS = {
+    4328: "Premier League",
+    4335: "La Liga",
+    4332: "Serie A",
+    4331: "Bundesliga",
+    4334: "Ligue 1",
+    4355: "Brasileirão",
+    4346: "MLS"
+}
 
 
 def sync_leagues(db: Session):
 
-    print("Sincronizando ligas...")
-
-    response = requests.get(API_URL, timeout=30)
-    data = response.json()
-
-    leagues = data.get("leagues", [])
+    print("Sincronizando ligas (CORREÇÃO FINAL)...")
 
     added = 0
 
-    for league in leagues:
-
-        name = league.get("strLeague", "")
-        sport = league.get("strSport", "")
-        league_id = league.get("idLeague")
-        country = league.get("strCountry", "")
-
-        if sport != "Soccer":
-            continue
-
-        allowed = False
-
-        for keyword in TARGET_KEYWORDS:
-            if keyword.lower() in name.lower() or keyword.lower() in country.lower():
-                allowed = True
-                break
-
-        if not allowed:
-            continue
+    for league_id, name in VALID_LEAGUE_IDS.items():
 
         exists = db.query(League).filter(
             League.external_id == league_id
@@ -62,17 +35,15 @@ def sync_leagues(db: Session):
 
         new_league = League(
             name=name,
-            country=country,
-            external_id=league_id,
-            sport="Soccer"
+            country="Unknown",
+            external_id=league_id
         )
 
         db.add(new_league)
-
         added += 1
 
-        print(f"Liga adicionada: {name}")
+        print(f"✔ Liga adicionada: {name}")
 
     db.commit()
 
-    print(f"Ligas adicionadas: {added}")
+    print(f"🔥 Total ligas adicionadas: {added}")

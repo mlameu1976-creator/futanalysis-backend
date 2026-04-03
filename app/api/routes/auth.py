@@ -30,6 +30,6 @@ def login(username: str, password: str, db: Session = Depends(get_db)):
         )
 
     return {
-        "access_token": "ok",
+        "access_token": "fake-token",
         "token_type": "bearer"
     }

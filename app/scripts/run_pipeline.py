@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal, engine
 from app.models.league import League
 from app.services.team_stats_service import TeamStatsService
-from app.services.pre_match_features_service import generate_pre_match_features
+from app.services.pre_match_features_service import PreMatchFeaturesService
 from app.services.opportunity_engine import OpportunityEngine
 
 
@@ -40,7 +40,7 @@ def run():
                 season=league.season
             )
 
-            generate_pre_match_features.build_for_league(
+            PreMatchFeaturesService.build_for_league(
                 db=db,
                 league_id=league.id,
                 season=league.season
