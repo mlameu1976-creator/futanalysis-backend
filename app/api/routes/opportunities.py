@@ -14,7 +14,7 @@ router = APIRouter()
 @router.get("/opportunities")
 def get_opportunities(
     date: str = Query("all"),
-    limit: int = Query(500),
+    limit: int = Query(100),  # 🔥 REDUZIDO (antes 500)
     db: Session = Depends(get_db)
 ):
 
@@ -31,41 +31,22 @@ def get_opportunities(
                 Opportunity.probability,
             )
             .join(Match, Opportunity.match_id == Match.id)
-
-            # 🔥 LEFT JOIN (não quebra se não existir)
             .outerjoin(League, Match.league_id == League.external_id)
-
-            # evitar jogos antigos
             .filter(func.date(Match.match_date) >= func.current_date())
+            .order_by(Match.match_date.asc())
+            .limit(limit)
         )
 
-        # -----------------------------
-        # FILTRO DE DATA
-        # -----------------------------
-
-        if date == "today":
-            query = query.filter(
-                func.date(Match.match_date) == func.current_date()
-            )
-
-        elif date == "tomorrow":
-            query = query.filter(
-                func.date(Match.match_date) == func.current_date() + 1
-            )
-
-        # ordenação
-        query = query.order_by(Match.match_date.asc())
-
-        # limite
-        query = query.limit(limit)
-
         results = query.all()
+
+        # 🔥 se não tiver dados → retorna rápido
+        if not results:
+            return []
 
         output = []
 
         for row in results:
 
-            # 🔥 proteção contra None
             match_date = None
             if row.match_date:
                 match_date = row.match_date - timedelta(hours=3)
@@ -77,7 +58,7 @@ def get_opportunities(
                 "match_date": match_date,
                 "league": row.league or "Unknown",
                 "market": row.market or "",
-                "probability": row.probability or 0,
+                "probability": float(row.probability) if row.probability else 0,
             })
 
         return output
