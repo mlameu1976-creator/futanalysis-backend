@@ -1,10 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.database import Base, engine
+
+Base.metadata.create_all(bind=engine)
 
 from app.api.routes.opportunities import router as opportunities_router
 from app.api.routes.predictions import router as predictions_router
 from app.api.routes.internal_generate_pipeline import router as pipeline_router
 from app.api.routes.admin import router as admin_router
+
 
 app = FastAPI(title="FutAnalysis API")
 
