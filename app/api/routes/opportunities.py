@@ -8,7 +8,6 @@ from app.models.match import Match
 from app.models.opportunity import Opportunity
 from app.models.league import League
 
-
 router = APIRouter()
 
 
@@ -19,56 +18,69 @@ def get_opportunities(
     db: Session = Depends(get_db)
 ):
 
-    query = (
-        db.query(
-            Opportunity.id,
-            Match.home_team,
-            Match.away_team,
-            Match.match_date,
-            League.name.label("league"),
-            Opportunity.market,
-            Opportunity.probability,
-        )
-        .join(Match, Opportunity.match_id == Match.id)
+    try:
 
-        # 🔥 JOIN CORRETO (external_id)
-        .join(League, Match.league_id == League.external_id)
+        query = (
+            db.query(
+                Opportunity.id,
+                Match.home_team,
+                Match.away_team,
+                Match.match_date,
+                League.name.label("league"),
+                Opportunity.market,
+                Opportunity.probability,
+            )
+            .join(Match, Opportunity.match_id == Match.id)
 
-        # impedir jogos antigos
-        .filter(func.date(Match.match_date) >= func.current_date())
-    )
+            # 🔥 LEFT JOIN (não quebra se não existir)
+            .outerjoin(League, Match.league_id == League.external_id)
 
-    # -----------------------------
-    # FILTRO DE DATA
-    # -----------------------------
-
-    if date == "today":
-        query = query.filter(
-            func.date(Match.match_date) == func.current_date()
+            # evitar jogos antigos
+            .filter(func.date(Match.match_date) >= func.current_date())
         )
 
-    elif date == "tomorrow":
-        query = query.filter(
-            func.date(Match.match_date) == func.current_date() + 1
-        )
+        # -----------------------------
+        # FILTRO DE DATA
+        # -----------------------------
 
-    # ordenação
-    query = query.order_by(Match.match_date.asc())
+        if date == "today":
+            query = query.filter(
+                func.date(Match.match_date) == func.current_date()
+            )
 
-    # limite (performance)
-    query = query.limit(limit)
+        elif date == "tomorrow":
+            query = query.filter(
+                func.date(Match.match_date) == func.current_date() + 1
+            )
 
-    results = query.all()
+        # ordenação
+        query = query.order_by(Match.match_date.asc())
 
-    return [
-        {
-            "id": row.id,
-            "home_team": row.home_team,
-            "away_team": row.away_team,
-            "match_date": row.match_date - timedelta(hours=3),
-            "league": row.league,
-            "market": row.market,
-            "probability": row.probability,
-        }
-        for row in results
-    ]
+        # limite
+        query = query.limit(limit)
+
+        results = query.all()
+
+        output = []
+
+        for row in results:
+
+            # 🔥 proteção contra None
+            match_date = None
+            if row.match_date:
+                match_date = row.match_date - timedelta(hours=3)
+
+            output.append({
+                "id": row.id,
+                "home_team": row.home_team or "",
+                "away_team": row.away_team or "",
+                "match_date": match_date,
+                "league": row.league or "Unknown",
+                "market": row.market or "",
+                "probability": row.probability or 0,
+            })
+
+        return output
+
+    except Exception as e:
+        return {"error": str(e)}
