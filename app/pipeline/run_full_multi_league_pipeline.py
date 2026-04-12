@@ -1,29 +1,17 @@
-from app.database import SessionLocal
-from app.pipeline.sync_leagues import sync_leagues
-from app.pipeline.sync_matches import sync_matches
-from app.pipeline.run_opportunity_pipeline import run_opportunity_pipeline
+# 🚫 NÃO EXECUTA AUTOMATICAMENTE
+
+def run_pipeline():
+    from app.pipeline.sync_leagues import sync_leagues
+    from app.pipeline.sync_matches import sync_matches
+
+    print("🚀 INICIANDO PIPELINE...")
+
+    sync_leagues()
+    sync_matches()
+
+    print("✅ PIPELINE FINALIZADO")
 
 
-def main():
-
-    print("🚀 INICIANDO PIPELINE COMPLETO")
-
-    db = SessionLocal()
-
-    try:
-        print("📊 Sincronizando ligas...")
-        sync_leagues(db)
-
-        print("⚽ Sincronizando partidas...")
-        sync_matches(db)
-
-        print("💰 Gerando oportunidades...")
-        run_opportunity_pipeline(db)
-
-        print("✅ PIPELINE FINALIZADO COM SUCESSO")
-
-    except Exception as e:
-        print("❌ ERRO NO PIPELINE:", str(e))
-
-    finally:
-        db.close()
+# 🔥 SÓ EXECUTA SE RODAR DIRETO (LOCAL)
+if __name__ == "__main__":
+    run_pipeline()
