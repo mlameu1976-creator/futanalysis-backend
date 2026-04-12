@@ -2,34 +2,52 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
+# =========================
+# PEGAR DATABASE_URL
+# =========================
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# 🔥 CORREÇÃO CRÍTICA
-if DATABASE_URL:
-    # remove prefixo errado se existir
-    if DATABASE_URL.startswith("DATABASE_URL="):
-        DATABASE_URL = DATABASE_URL.replace("DATABASE_URL=", "")
+# fallback local (caso não exista)
+if not DATABASE_URL:
+    DATABASE_URL = "sqlite:///./test.db"
 
-    # correção do postgres
-    if DATABASE_URL.startswith("postgres://"):
-        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://")
+# corrigir postgres://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://")
 
-print("DATABASE_URL DEBUG:", DATABASE_URL)
+print("🚀 DATABASE_URL:", DATABASE_URL)
 
-engine = create_engine(
-    DATABASE_URL,
-    echo=False
-)
+# =========================
+# ENGINE SEGURO
+# =========================
+try:
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True
+    )
+except Exception as e:
+    print("❌ ERRO AO CRIAR ENGINE:", e)
+    engine = None
 
+# =========================
+# SESSION
+# =========================
 SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
     bind=engine
-)
+) if engine else None
 
 Base = declarative_base()
 
+# =========================
+# DEPENDENCY
+# =========================
 def get_db():
+    if SessionLocal is None:
+        yield None
+        return
+
     db = SessionLocal()
     try:
         yield db
