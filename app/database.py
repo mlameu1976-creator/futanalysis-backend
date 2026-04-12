@@ -5,6 +5,8 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 # pega a URL do banco do Railway
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+print("DATABASE_URL DEBUG:", DATABASE_URL)
+
 # fallback (caso rode localmente)
 if not DATABASE_URL:
     DATABASE_URL = "postgresql://postgres:452576@localhost:5432/futanalysis"
