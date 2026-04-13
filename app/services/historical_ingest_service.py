@@ -13,15 +13,17 @@ BASE_URL = f"https://www.thesportsdb.com/api/v1/json/{API_KEY}"
 
 def ensure_league_exists(db: Session, league_id: int):
 
-    league = db.query(League).filter(League.id == league_id).first()
+    league = db.query(League).filter(
+        League.external_id == str(league_id)
+    ).first()
 
     if league:
         return
 
     try:
         new_league = League(
-            id=league_id,
-            name=f"League {league_id}",  # placeholder seguro
+            external_id=str(league_id),
+            name=f"League {league_id}",
             country="Unknown"
         )
 
@@ -29,6 +31,10 @@ def ensure_league_exists(db: Session, league_id: int):
         db.commit()
 
         print(f"🆕 Liga criada automaticamente: {league_id}")
+
+    except Exception as e:
+        db.rollback()
+        print(f"❌ Erro ao criar liga: {e}")
 
     except Exception as e:
         db.rollback()
