@@ -1,17 +1,29 @@
-# 🚫 NÃO EXECUTA AUTOMATICAMENTE
+from app.database import SessionLocal
+
+from app.pipeline.sync_leagues import sync_leagues
+from app.pipeline.sync_matches import sync_matches
+
 
 def run_pipeline():
-    from app.pipeline.sync_leagues import sync_leagues
-    from app.pipeline.sync_matches import sync_matches
 
     print("🚀 INICIANDO PIPELINE...")
 
-    sync_leagues()
-    sync_matches()
+    db = SessionLocal()
 
-    print("✅ PIPELINE FINALIZADO")
+    try:
+        # 🔥 AGORA PASSANDO O DB CORRETO
+        sync_leagues(db)
+        sync_matches(db)
+
+        print("✅ PIPELINE FINALIZADO")
+
+    except Exception as e:
+        print("❌ ERRO NO PIPELINE:", e)
+
+    finally:
+        db.close()
 
 
-# 🔥 SÓ EXECUTA SE RODAR DIRETO (LOCAL)
+# 🚫 NÃO EXECUTAR AUTOMATICAMENTE NO RAILWAY
 if __name__ == "__main__":
     run_pipeline()
