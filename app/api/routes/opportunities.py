@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import func, cast, Integer
+from sqlalchemy import func
 from datetime import timedelta
 
 from app.database import get_db
@@ -15,51 +15,55 @@ router = APIRouter()
 @router.get("/opportunities")
 def get_opportunities(
     date: str = Query("all"),
-    limit: int = Query(500),
+    limit: int = Query(100),
     db: Session = Depends(get_db)
 ):
 
-    query = (
-        db.query(
-            Opportunity.id,
-            Match.home_team,
-            Match.away_team,
-            Match.match_date,
-            League.name.label("league"),
-            Opportunity.market,
-            Opportunity.probability,
-        )
-        .join(Match, Opportunity.match_id == Match.id)
+    try:
 
-        # 🔥 CORREÇÃO CRÍTICA (CAST)
-        .join(League, cast(Match.league_id, Integer) == League.external_id)
+        query = (
+            db.query(
+                Opportunity.id,
+                Match.home_team,
+                Match.away_team,
+                Match.match_date,
+                League.name.label("league"),
+                Opportunity.market,
+                Opportunity.probability,
+            )
+            .join(Match, Opportunity.match_id == Match.id)
 
-        .filter(func.date(Match.match_date) >= func.current_date())
-    )
+            # 🔥 JOIN SIMPLES (SEM CAST)
+            .join(League, Match.league_id == League.external_id)
 
-    if date == "today":
-        query = query.filter(
-            func.date(Match.match_date) == func.current_date()
+            .filter(func.date(Match.match_date) >= func.current_date())
         )
 
-    elif date == "tomorrow":
-        query = query.filter(
-            func.date(Match.match_date) == func.current_date() + 1
-        )
+        if date == "today":
+            query = query.filter(
+                func.date(Match.match_date) == func.current_date()
+            )
 
-    query = query.order_by(Match.match_date.asc()).limit(limit)
+        elif date == "tomorrow":
+            query = query.filter(
+                func.date(Match.match_date) == func.current_date() + 1
+            )
 
-    results = query.all()
+        results = query.order_by(Match.match_date.asc()).limit(limit).all()
 
-    return [
-        {
-            "id": row.id,
-            "home_team": row.home_team,
-            "away_team": row.away_team,
-            "match_date": row.match_date - timedelta(hours=3),
-            "league": row.league,
-            "market": row.market,
-            "probability": row.probability,
-        }
-        for row in results
-    ]
+        return [
+            {
+                "id": row.id,
+                "home_team": row.home_team,
+                "away_team": row.away_team,
+                "match_date": row.match_date - timedelta(hours=3),
+                "league": row.league,
+                "market": row.market,
+                "probability": row.probability,
+            }
+            for row in results
+        ]
+
+    except Exception as e:
+        print("❌ ERRO NA ROTA OPPORTUNITIES:", e)
+        return {"error": str(e)}
