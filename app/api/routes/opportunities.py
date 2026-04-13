@@ -1,12 +1,10 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 from datetime import timedelta
 
 from app.database import get_db
 from app.models.match import Match
 from app.models.opportunity import Opportunity
-from app.models.league import League
 
 
 router = APIRouter()
@@ -14,42 +12,27 @@ router = APIRouter()
 
 @router.get("/opportunities")
 def get_opportunities(
-    date: str = Query("all"),
     limit: int = Query(100),
     db: Session = Depends(get_db)
 ):
 
     try:
 
-        query = (
+        results = (
             db.query(
                 Opportunity.id,
                 Match.home_team,
                 Match.away_team,
                 Match.match_date,
-                League.name.label("league"),
+                Match.league_id,  # 👈 usamos direto
                 Opportunity.market,
                 Opportunity.probability,
             )
             .join(Match, Opportunity.match_id == Match.id)
-
-            # 🔥 JOIN SIMPLES (SEM CAST)
-            .join(League, Match.league_id == League.external_id)
-
-            .filter(func.date(Match.match_date) >= func.current_date())
+            .order_by(Match.match_date.asc())
+            .limit(limit)
+            .all()
         )
-
-        if date == "today":
-            query = query.filter(
-                func.date(Match.match_date) == func.current_date()
-            )
-
-        elif date == "tomorrow":
-            query = query.filter(
-                func.date(Match.match_date) == func.current_date() + 1
-            )
-
-        results = query.order_by(Match.match_date.asc()).limit(limit).all()
 
         return [
             {
@@ -57,7 +40,7 @@ def get_opportunities(
                 "home_team": row.home_team,
                 "away_team": row.away_team,
                 "match_date": row.match_date - timedelta(hours=3),
-                "league": row.league,
+                "league": f"League {row.league_id}",  # 👈 simples
                 "market": row.market,
                 "probability": row.probability,
             }
@@ -65,5 +48,5 @@ def get_opportunities(
         ]
 
     except Exception as e:
-        print("❌ ERRO NA ROTA OPPORTUNITIES:", e)
+        print("ERRO:", e)
         return {"error": str(e)}
