@@ -20,14 +20,16 @@ VALID_LEAGUE_IDS = {
 
 def sync_leagues(db: Session):
 
-    print("Sincronizando ligas (CORREÇÃO FINAL)...")
+    print("🚀 Sincronizando ligas (CORREÇÃO FINAL DEFINITIVA)...")
 
     added = 0
 
     for league_id, name in VALID_LEAGUE_IDS.items():
 
+        league_id_str = str(league_id)  # 🔥 CORREÇÃO CRÍTICA
+
         exists = db.query(League).filter(
-            League.external_id == league_id
+            League.external_id == league_id_str
         ).first()
 
         if exists:
@@ -36,7 +38,7 @@ def sync_leagues(db: Session):
         new_league = League(
             name=name,
             country="Unknown",
-            external_id=league_id
+            external_id=league_id_str  # 🔥 CORREÇÃO CRÍTICA
         )
 
         db.add(new_league)
