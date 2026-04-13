@@ -7,6 +7,7 @@ from app.api.routes.internal_generate_pipeline import router as pipeline_router
 
 app = FastAPI(title="FutAnalysis API")
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,10 +16,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ROTAS
 app.include_router(opportunities_router)
 app.include_router(predictions_router)
 app.include_router(pipeline_router)
 
-@app.get("/")
-def root():
-    return {"status": "API ONLINE 🚀"}
+
+# 🚫 BLOQUEIO TOTAL DE EXECUÇÃO AUTOMÁTICA
+# (garante que NADA roda no startup)
+@app.on_event("startup")
+def startup_event():
+    print("🚀 API iniciada com sucesso (SEM pipeline automático)")

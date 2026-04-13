@@ -22,7 +22,7 @@ def run_pipeline():
         db.close()
 
 
-# 🚫 MUITO IMPORTANTE
-# NÃO EXECUTAR AUTOMATICAMENTE
+# 🚫 NUNCA EXECUTAR AUTOMATICAMENTE
+# (ESSENCIAL PARA RAILWAY)
 if __name__ == "__main__":
     run_pipeline()
