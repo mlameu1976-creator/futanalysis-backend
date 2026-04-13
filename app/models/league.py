@@ -14,6 +14,7 @@ class League(Base):
 
     country = Column(String)
 
-    external_id = Column(String, unique=True, index=True)
+    # 🔥 CORREÇÃO FINAL
+    external_id = Column(Integer, unique=True, index=True)
 
     matches = relationship("Match", back_populates="league")
