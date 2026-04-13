@@ -1,5 +1,4 @@
 from app.database import SessionLocal
-
 from app.pipeline.sync_leagues import sync_leagues
 from app.pipeline.sync_matches import sync_matches
 
@@ -11,7 +10,6 @@ def run_pipeline():
     db = SessionLocal()
 
     try:
-        # 🔥 AGORA PASSANDO O DB CORRETO
         sync_leagues(db)
         sync_matches(db)
 
@@ -24,6 +22,7 @@ def run_pipeline():
         db.close()
 
 
-# 🚫 NÃO EXECUTAR AUTOMATICAMENTE NO RAILWAY
+# 🚫 MUITO IMPORTANTE
+# NÃO EXECUTAR AUTOMATICAMENTE
 if __name__ == "__main__":
     run_pipeline()
