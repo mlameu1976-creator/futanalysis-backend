@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# 🔥 IMPORTA AS ROTAS
 from app.api.routes.opportunities import router as opportunities_router
+from app.api.routes.predictions import router as predictions_router
+from app.api.routes.internal_generate_pipeline import router as pipeline_router
 
 app = FastAPI(title="FutAnalysis API")
 
@@ -15,10 +16,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ HEALTHCHECK (NUNCA REMOVER)
+# ROTAS
+app.include_router(opportunities_router)
+app.include_router(predictions_router)
+app.include_router(pipeline_router)
+
+
 @app.get("/")
 def root():
-    return {"status": "API ONLINE 🚀"}
-
-# ✅ REGISTRA ROTA
-app.include_router(opportunities_router)
+    return {"status": "ok"}
