@@ -20,6 +20,7 @@ app.include_router(opportunities_router)
 app.include_router(predictions_router)
 
 
+# 🔥 ROTA TESTE (GARANTE QUE API ESTÁ ONLINE)
 @app.get("/")
 def root():
-    return {"status": "API ONLINE"}
+    return {"status": "API ONLINE 🚀"}
