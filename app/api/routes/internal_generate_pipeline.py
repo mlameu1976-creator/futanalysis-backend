@@ -1,17 +1,10 @@
 from fastapi import APIRouter
-import subprocess
+from app.pipeline.run_full_multi_league_pipeline import run_pipeline
 
-router = APIRouter()
+router = APIRouter(prefix="", tags=["Pipeline"])
+
 
 @router.get("/run-pipeline")
-def run_pipeline_route():
-
-    try:
-        subprocess.Popen(
-            ["python", "-m", "app.pipeline.run_full_multi_league_pipeline"]
-        )
-
-        return {"status": "pipeline iniciado"}
-
-    except Exception as e:
-        return {"error": str(e)}
+def execute_pipeline():
+    run_pipeline()
+    return {"status": "pipeline executado com sucesso"}
