@@ -18,5 +18,5 @@ class Match(Base):
 
     league = relationship("League", back_populates="matches")
 
-    # 🔥 ESSA LINHA RESOLVE SEU ERRO
+    # 🔥 ESSA LINHA É O CORAÇÃO DO PROBLEMA
     opportunities = relationship("Opportunity", back_populates="match")
