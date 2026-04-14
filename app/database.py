@@ -11,7 +11,16 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
-# 🔥 IMPORTAÇÃO FORÇADA DOS MODELS (CRÍTICO)
+# 🔥 FUNÇÃO QUE ESTAVA FALTANDO (CRÍTICA)
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+# 🔥 IMPORTAÇÃO FORÇADA DOS MODELS (MANTER)
 from app.models import match
 from app.models import league
 from app.models import opportunity
