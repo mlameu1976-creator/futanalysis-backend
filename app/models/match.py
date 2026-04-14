@@ -10,14 +10,12 @@ class Match(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    external_id = Column(String, unique=True, index=True)
-
     home_team = Column(String)
     away_team = Column(String)
-
     match_date = Column(DateTime)
 
-    # 🔥 CORREÇÃO CRÍTICA
-    league_id = Column(Integer)
+    # 🔥 CORREÇÃO AQUI
+    league_id = Column(String, ForeignKey("leagues.external_id"))
 
+    # 🔥 RELACIONAMENTO CORRETO
     league = relationship("League", back_populates="matches")
