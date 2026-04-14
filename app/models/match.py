@@ -16,8 +16,8 @@ class Match(Base):
 
     league_id = Column(String, ForeignKey("leagues.external_id"))
 
-    # RELACIONAMENTOS
+    # RELACIONAMENTO COM LEAGUE
     league = relationship("League", back_populates="matches")
 
-    # 🔥 ADICIONAR ISSO (ESSENCIAL)
+    # 🔥 ESSENCIAL (ESTÁ FALTANDO NO SEU)
     opportunities = relationship("Opportunity", back_populates="match")
