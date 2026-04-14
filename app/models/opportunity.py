@@ -15,5 +15,4 @@ class Opportunity(Base):
     market = Column(String)
     probability = Column(Float)
 
-    # 🔥 RELACIONAMENTO CORRETO
     match = relationship("Match", back_populates="opportunities")
