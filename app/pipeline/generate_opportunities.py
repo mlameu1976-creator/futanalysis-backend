@@ -25,7 +25,7 @@ def generate_opportunities(db: Session):
         ev = round((probability * odds) - 1, 3)
 
         # 🔥 FILTRO REAL (ESSENCIAL)
-        if ev < 0.05:
+        if ev < -1:
             continue
 
         opportunity = Opportunity(
