@@ -1,6 +1,7 @@
 from app.database import SessionLocal
 from app.pipeline.sync_leagues import sync_leagues
 from app.pipeline.sync_matches import sync_matches
+from app.pipeline.generate_opportunities import generate_opportunities
 
 
 def run_pipeline():
@@ -12,6 +13,7 @@ def run_pipeline():
     try:
         sync_leagues(db)
         sync_matches(db)
+        generate_opportunities(db)  # 🔥 NOVO
 
         print("✅ PIPELINE FINALIZADO")
 
@@ -22,7 +24,5 @@ def run_pipeline():
         db.close()
 
 
-# 🚫 NUNCA EXECUTAR AUTOMATICAMENTE
-# (ESSENCIAL PARA RAILWAY)
 if __name__ == "__main__":
     run_pipeline()

@@ -13,6 +13,11 @@ class Opportunity(Base):
     match_id = Column(Integer, ForeignKey("matches.id"))
 
     market = Column(String)
+
     probability = Column(Float)
+
+    odds = Column(Float)  # 🔥 NOVO
+
+    ev = Column(Float)    # 🔥 NOVO
 
     match = relationship("Match", back_populates="opportunities")
