@@ -14,8 +14,10 @@ class Match(Base):
     away_team = Column(String)
     match_date = Column(DateTime)
 
-    # 🔥 CORREÇÃO AQUI
     league_id = Column(String, ForeignKey("leagues.external_id"))
 
-    # 🔥 RELACIONAMENTO CORRETO
+    # RELACIONAMENTOS
     league = relationship("League", back_populates="matches")
+
+    # 🔥 ADICIONAR ISSO (ESSENCIAL)
+    opportunities = relationship("Opportunity", back_populates="match")
