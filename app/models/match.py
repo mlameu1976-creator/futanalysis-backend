@@ -1,6 +1,5 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
-
 from app.database import Base
 
 
@@ -10,13 +9,21 @@ class Match(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
+    league_id = Column(Integer, ForeignKey("leagues.id"))
+
     home_team = Column(String)
     away_team = Column(String)
-    match_date = Column(DateTime)
 
-    league_id = Column(String, ForeignKey("leagues.external_id"))
+    date = Column(String)
+
+    # 🔥 ADICIONAR ISSO
+    external_id = Column(Integer, unique=True, index=True)
+    season = Column(String)
+    home_goals = Column(Integer)
+    away_goals = Column(Integer)
+    is_finished = Column(Boolean)
 
     league = relationship("League", back_populates="matches")
 
-    # 🔥 ESSA LINHA É O CORAÇÃO DO PROBLEMA
+    # 🔥 IMPORTANTE (corrige erro anterior)
     opportunities = relationship("Opportunity", back_populates="match")

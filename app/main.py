@@ -1,13 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.database import Base, engine
+
 from app.api.routes.opportunities import router as opportunities_router
 from app.api.routes.predictions import router as predictions_router
-from app.api.routes.pipeline import router as pipeline_router
-
-
-
-print("🔥 IMPORTANDO PIPELINE ROUTER...")
+from app.api.routes.internal_generate_pipeline import router as pipeline_router
 
 app = FastAPI(title="FutAnalysis API")
 
@@ -26,13 +24,8 @@ app.include_router(predictions_router)
 app.include_router(pipeline_router)
 
 
-@app.get("/")
-def root():
-    return {"status": "ok"}
-
-from app.pipeline.run_full_multi_league_pipeline import run_pipeline
-
-@app.get("/run-pipeline")
-def run_pipeline_route():
-    run_pipeline()
-    return {"status": "pipeline executado"}
+# 🔥 CRIA AS TABELAS AUTOMATICAMENTE
+@app.on_event("startup")
+def startup_event():
+    Base.metadata.create_all(bind=engine)
+    print("🔥 TABELAS CRIADAS COM SUCESSO")
