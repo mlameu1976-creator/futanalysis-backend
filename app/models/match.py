@@ -22,6 +22,7 @@ class Match(Base):
     home_goals = Column(Integer)
     away_goals = Column(Integer)
     is_finished = Column(Boolean)
+    match_date = Column(DateTime)
 
     league = relationship("League", back_populates="matches")
 
