@@ -1,25 +1,22 @@
 from fastapi import FastAPI
-from sqlalchemy.orm import configure_mappers
-
 from app.database import engine
 from app.db.base import Base
-
-# 🔥 IMPORTAR TODOS OS MODELS AQUI (CENTRALIZADO)
-import app.models.match
-import app.models.league
-import app.models.opportunity
 
 app = FastAPI()
 
 
 @app.on_event("startup")
 def startup():
-    print("🚀 Inicializando aplicação...")
+    print("🚀 Startup iniciado")
 
-    # 🔥 GARANTE QUE TODOS OS MAPPERS SEJAM RESOLVIDOS
-    configure_mappers()
+    # 🔥 IMPORTA MODELS AQUI (CONTROLADO)
+    import app.models.match
+    import app.models.league
+    import app.models.opportunity
 
-    # 🔥 CRIA TABELAS
+    # 🔥 NÃO CHAMAR configure_mappers()
+    # 🔥 NÃO USAR RELATIONSHIPS
+
     Base.metadata.create_all(bind=engine)
 
-    print("✅ Mappers configurados e tabelas criadas")
+    print("✅ Banco pronto")
