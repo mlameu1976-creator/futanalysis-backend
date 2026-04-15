@@ -2,6 +2,10 @@ from fastapi import FastAPI
 from app.database import engine
 from app.db.base import Base
 
+from app.api.routes.opportunities import router as opportunities_router
+
+app.include_router(opportunities_router)
+
 app = FastAPI()
 
 
