@@ -6,7 +6,7 @@ from app.db.base import Base
 class Opportunity(Base):
     __tablename__ = "opportunities"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
 
     match_id = Column(Integer, ForeignKey("matches.id"))
 
@@ -15,4 +15,7 @@ class Opportunity(Base):
     odds = Column(Float)
     ev = Column(Float)
 
-    match = relationship("Match", back_populates="opportunities")
+    match = relationship(
+        "app.models.match.Match",
+        back_populates="opportunities"
+    )
