@@ -8,9 +8,18 @@ app = FastAPI()
 @app.on_event("startup")
 def startup():
 
-    # 🔥 IMPORT CONTROLADO
-    from app.models.match import Match
-    from app.models.league import League
-    from app.models.opportunity import Opportunity
+    print("🚀 STARTUP LIMPO")
+
+    # IMPORT CONTROLADO
+    import app.models.match
+    import app.models.league
+    import app.models.opportunity
 
     Base.metadata.create_all(bind=engine)
+
+    print("✅ Banco pronto")
+
+
+@app.get("/")
+def root():
+    return {"status": "ok"}
