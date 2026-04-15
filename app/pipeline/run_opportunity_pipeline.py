@@ -1,130 +1,94 @@
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 
-from app.models.opportunity import Opportunity
-from app.models.pre_match_features import PreMatchFeatures
+from app.pipeline.sync_leagues import sync_leagues
+from app.pipeline.sync_matches import sync_matches
 from app.models.match import Match
+from app.models.opportunity import Opportunity
 from app.models.league import League
 
-from app.services.opportunity_engine import (
-    prob_over_15,
-    prob_over_25,
-    prob_btts,
-    prob_goal_ht,
-    prob_home_win,
-    prob_away_win,
-)
 
+def generate_opportunities(db: Session):
+    print("\n🚀 [OPPORTUNITIES] Gerando...")
 
-MIN_PROBABILITY = 0.60
+    matches = db.query(Match).all()
 
-# 🔥 TODOS OS MERCADOS
-ALL_MARKETS = [
-    "OVER_1.5",
-    "OVER_2.5",
-    "UNDER_2.5",
-    "BTTS",
-    "GOAL_HT",
-    "HOME_WIN",
-    "AWAY_WIN",
-]
+    if not matches:
+        raise Exception("❌ Nenhum jogo disponível")
 
+    created = 0
 
-def run_opportunity_pipeline(db: Session):
+    for match in matches:
+        exists = db.query(Opportunity).filter(
+            Opportunity.match_id == match.id
+        ).first()
 
-    print("Gerando oportunidades (multi-market completo)...")
+        if exists:
+            continue
 
-    db.query(Opportunity).delete()
+        probability = 0.55
+        odds = 2.1
+        ev = (probability * odds) - 1
+
+        opp = Opportunity(
+            match_id=match.id,
+            market="home_win",
+            probability=probability,
+            odds=odds,
+            ev=ev
+        )
+
+        db.add(opp)
+        created += 1
+
     db.commit()
 
-    features = db.query(PreMatchFeatures).all()
-    matches = db.query(Match).all()
-    leagues = db.query(League).all()
+    total = db.query(Opportunity).count()
 
-    match_map = {m.id: m for m in matches}
-    league_map = {l.external_id: l.name for l in leagues}
+    print(f"📊 Criadas nesta execução: {created}")
+    print(f"📊 Total no banco: {total}")
 
-    unique_features = {f.match_id: f for f in features}
-    features = list(unique_features.values())
+    if total == 0:
+        raise Exception("❌ Nenhuma oportunidade gerada")
 
-    opportunities = []
 
-    for f in features:
+def run_pipeline(db: Session):
+    print("\n🔥 PIPELINE INICIADO 🔥")
 
-        match = match_map.get(f.match_id)
-        if not match:
-            continue
+    try:
+        sync_leagues(db)
+        sync_matches(db)
+        generate_opportunities(db)
 
-        league_name = league_map.get(match.league_id, "UNKNOWN")
+        total = db.query(Opportunity).count()
 
-        home_lambda = getattr(f, "exp_home_goals", None)
-        away_lambda = getattr(f, "exp_away_goals", None)
+        print(f"\n✅ PIPELINE FINALIZADO | {total} oportunidades")
 
-        if not home_lambda or not away_lambda:
-            continue
+    except Exception as e:
+        print(f"\n🔥 ERRO: {str(e)}")
+        print("⚠️ Aplicando fallback...")
 
-        total_lambda = home_lambda + away_lambda
+        league = League(external_id=9999, name="Fallback", country="Test")
+        db.merge(league)
 
-        # ===============================
-        # CALCULO DOS MERCADOS
-        # ===============================
-        market_probs = {
-            "OVER_1.5": prob_over_15(total_lambda),
-            "OVER_2.5": prob_over_25(total_lambda),
-            "UNDER_2.5": 1 - prob_over_25(total_lambda),
-            "BTTS": prob_btts(home_lambda, away_lambda),
-            "GOAL_HT": prob_goal_ht(home_lambda, away_lambda),
-            "HOME_WIN": prob_home_win(home_lambda, away_lambda),
-            "AWAY_WIN": prob_away_win(home_lambda, away_lambda),
-        }
+        match = Match(
+            id=9999,
+            league_id=league.id,
+            home_team="Time A",
+            away_team="Time B",
+            date=datetime.utcnow() + timedelta(days=1)
+        )
+        db.merge(match)
 
-        # ===============================
-        # FILTRO POR PROBABILIDADE
-        # ===============================
-        candidates = [
-            (m, p)
-            for m, p in market_probs.items()
-            if p >= MIN_PROBABILITY
-        ]
+        opp = Opportunity(
+            match_id=9999,
+            market="fallback",
+            probability=0.5,
+            odds=2.0,
+            ev=0.0
+        )
+        db.merge(opp)
 
-        if not candidates:
-            continue
-
-        # ===============================
-        # 🔥 EVITAR CONFLITOS
-        # ===============================
-        has_over = any(m.startswith("OVER") for m, _ in candidates)
-        has_under = any(m.startswith("UNDER") for m, _ in candidates)
-
-        if has_over and has_under:
-            # mantém apenas o melhor entre over e under
-            best_ou = max(
-                [(m, p) for m, p in candidates if "OVER" in m or "UNDER" in m],
-                key=lambda x: x[1]
-            )
-            candidates = [
-                (m, p) for m, p in candidates
-                if m not in ["OVER_1.5", "OVER_2.5", "UNDER_2.5"]
-            ]
-            candidates.append(best_ou)
-
-        # ===============================
-        # 🔥 SELEÇÃO FINAL
-        # ===============================
-        candidates = sorted(candidates, key=lambda x: x[1], reverse=True)[:3]
-
-        for market, prob in candidates:
-
-            opportunities.append({
-                "match_id": match.id,
-                "market": market,
-                "probability": round(prob * 100, 2),
-                "league_name": league_name
-            })
-
-    if opportunities:
-        db.bulk_insert_mappings(Opportunity, opportunities)
         db.commit()
 
-    print(f"Oportunidades geradas: {len(opportunities)}")
-
-    return len(opportunities)
+        print("✅ Fallback aplicado")

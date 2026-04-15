@@ -1,32 +1,25 @@
-import requests
 from sqlalchemy.orm import Session
 from app.models.league import League
 
-API_KEY = "844189"
-API_URL = f"https://www.thesportsdb.com/api/v1/json/{API_KEY}/all_leagues.php"
-
-
-# 🔥 LIGAS TESTADAS E FUNCIONAIS
+# 🔥 LIGAS VALIDADAS (TheSportsDB)
 VALID_LEAGUE_IDS = {
-    4328: "Premier League",
-    4335: "La Liga",
-    4332: "Serie A",
-    4331: "Bundesliga",
-    4334: "Ligue 1",
-    4355: "Brasileirão",
-    4346: "MLS"
+    4328: ("Premier League", "England"),
+    4335: ("La Liga", "Spain"),
+    4332: ("Serie A", "Italy"),
+    4331: ("Bundesliga", "Germany"),
+    4334: ("Ligue 1", "France"),
+    4355: ("Brasileirão", "Brazil"),
+    4346: ("MLS", "USA")
 }
 
 
 def sync_leagues(db: Session):
-
-    print("🚀 Sincronizando ligas (CORREÇÃO FINAL DEFINITIVA)...")
+    print("\n🚀 [LEAGUES] Sincronizando...")
 
     added = 0
 
-    for league_id, name in VALID_LEAGUE_IDS.items():
+    for league_id, (name, country) in VALID_LEAGUE_IDS.items():
 
-        # 🔥 GARANTIR QUE É INTEGER
         league_id = int(league_id)
 
         exists = db.query(League).filter(
@@ -34,19 +27,27 @@ def sync_leagues(db: Session):
         ).first()
 
         if exists:
+            print(f"⏩ Liga já existe: {name}")
             continue
 
-        new_league = League(
+        league = League(
             name=name,
-            country="Unknown",
-            external_id=league_id  # 🔥 SEM STRING
+            country=country,
+            external_id=league_id
         )
 
-        db.add(new_league)
+        db.add(league)
         added += 1
 
-        print(f"✔ Liga adicionada: {name}")
+        print(f"✅ Liga inserida: {name}")
 
     db.commit()
 
-    print(f"🔥 Total ligas adicionadas: {added}")
+    total = db.query(League).count()
+
+    print(f"📊 Inseridas nesta execução: {added}")
+    print(f"📊 Total no banco: {total}")
+
+    # 🚨 VALIDAÇÃO REAL
+    if total == 0:
+        raise Exception("❌ Nenhuma liga no banco após sync")
