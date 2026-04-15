@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Float, String, ForeignKey
+from sqlalchemy import Column, Integer, Float, String
 from app.db.base import Base
 
 
@@ -7,7 +7,7 @@ class Opportunity(Base):
 
     id = Column(Integer, primary_key=True)
 
-    match_id = Column(Integer, ForeignKey("matches.id"))
+    match_id = Column(Integer)  # 🔥 sem FK
 
     market = Column(String)
     probability = Column(Float)

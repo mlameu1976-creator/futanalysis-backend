@@ -9,4 +9,4 @@ class League(Base):
 
     name = Column(String)
     country = Column(String)
-    external_id = Column(Integer, unique=True)
+    external_id = Column(Integer)
