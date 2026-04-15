@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, Float, String, ForeignKey
 from sqlalchemy.orm import relationship
-from app.database import Base
+from app.db.base import Base
 
 
 class Opportunity(Base):
@@ -15,5 +15,4 @@ class Opportunity(Base):
     odds = Column(Float)
     ev = Column(Float)
 
-    # 🔥 GARANTE CONSISTÊNCIA
     match = relationship("Match", back_populates="opportunities")

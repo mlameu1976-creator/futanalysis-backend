@@ -1,25 +1,16 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker
 import os
+
+from app.db.base import Base
 
 print("🔥 DATABASE_URL USADO:", os.getenv("DATABASE_URL"))
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# ✅ BASE PRIMEIRO (OBRIGATÓRIO)
-Base = declarative_base()
-
-# ✅ ENGINE
 engine = create_engine(DATABASE_URL)
 
-# ✅ SESSION
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-
-# ✅ IMPORTAÇÃO EXPLÍCITA DOS MODELS (SEM AMBIGUIDADE)
-import app.models.match
-import app.models.league
-import app.models.opportunity
 
 
 def get_db():
@@ -28,3 +19,9 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+# 🔥 IMPORTS NO FINAL (SEM CIRCULAR)
+import app.models.match
+import app.models.league
+import app.models.opportunity
