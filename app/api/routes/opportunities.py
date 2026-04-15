@@ -9,10 +9,18 @@ router = APIRouter()
 def get_opportunities(db=Depends(get_db)):
 
     result = db.execute(text("""
-        SELECT o.*, m.home_team, m.away_team
+        SELECT 
+            o.id,
+            o.match_id,
+            o.market,
+            o.probability,
+            o.odds,
+            o.ev,
+            m.home_team,
+            m.away_team
         FROM opportunities o
         JOIN matches m ON m.id = o.match_id
         LIMIT 100
     """))
 
-    return [dict(r) for r in result]
+    return [dict(row._mapping) for row in result]
