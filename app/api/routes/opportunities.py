@@ -8,23 +8,6 @@ router = APIRouter()
 @router.get("/opportunities")
 def get_opportunities(db=Depends(get_db)):
 
-    try:
-        result = db.execute(text("""
-            SELECT 
-                o.id,
-                o.match_id,
-                o.market,
-                o.probability,
-                o.odds,
-                o.ev,
-                m.home_team,
-                m.away_team
-            FROM opportunities o
-            LEFT JOIN matches m ON m.id = o.match_id
-            LIMIT 100
-        """))
+    result = db.execute(text("SELECT 1 as test"))
 
-        return [dict(row._mapping) for row in result]
-
-    except Exception as e:
-        return {"error_real": str(e)}
+    return [dict(r._mapping) for r in result]
