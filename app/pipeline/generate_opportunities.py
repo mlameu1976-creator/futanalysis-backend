@@ -1,41 +1,33 @@
-from sqlalchemy.orm import Session
-from app.models.match import Match
-from app.models.opportunity import Opportunity
+from sqlalchemy import text
 
 
-def generate_opportunities(db: Session):
+def generate_opportunities(db):
 
-    print("🔥 Gerando oportunidades...")
+    print("🚀 Gerando oportunidades...")
 
-    # 🔥 LIMPA ANTIGAS
-    db.query(Opportunity).delete()
+    matches = db.execute(text("SELECT id FROM matches")).fetchall()
 
-    matches = db.query(Match).all()
+    total = 0
 
-    print(f"📊 Jogos encontrados: {len(matches)}")
+    for m in matches:
 
-    count = 0
-
-    for match in matches:
-
-        # 🔥 DADOS MOCK (GARANTE FUNCIONAMENTO)
-        probability = 0.65
-        odds = 1.80
-
+        probability = 0.55
+        odds = 2.0
         ev = (probability * odds) - 1
 
-        if ev > 0:
-            op = Opportunity(
-                match_id=match.id,
-                market="over_2.5",
-                probability=probability,
-                odds=odds,
-                ev=ev
-            )
+        db.execute(text("""
+            INSERT INTO opportunities (match_id, market, probability, odds, ev)
+            VALUES (:match_id, 'home_win', :p, :o, :ev)
+            ON CONFLICT DO NOTHING
+        """), {
+            "match_id": m.id,
+            "p": probability,
+            "o": odds,
+            "ev": ev
+        })
 
-            db.add(op)
-            count += 1
+        total += 1
 
     db.commit()
 
-    print(f"✅ Oportunidades geradas: {count}")
+    print(f"✅ Oportunidades: {total}")

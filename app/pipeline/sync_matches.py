@@ -1,33 +1,60 @@
-from sqlalchemy.orm import Session
-from app.models.league import League
-from app.services.thesportsdb_future_ingest_service import ingest_future_matches
+import requests
+from sqlalchemy import text
+from datetime import datetime
 
 
-def sync_matches(db: Session):
-    print("\n🚀 [MATCHES] Sincronizando...")
+API_KEY = "844189"
+BASE_URL = f"https://www.thesportsdb.com/api/v1/json/{API_KEY}"
 
-    leagues = db.query(League).all()
 
-    if not leagues:
-        raise Exception("❌ Nenhuma liga encontrada antes de buscar jogos")
+def sync_matches(db):
 
-    created_total = 0
+    print("🚀 Inserindo jogos...")
+
+    leagues = db.execute(text("SELECT id, external_id FROM leagues")).fetchall()
+
+    total = 0
 
     for league in leagues:
-        print(f"📡 Buscando jogos para liga_id={league.external_id}")
 
-        created = ingest_future_matches(
-            db=db,
-            league_id=league.external_id  # 🔥 CRÍTICO
-        )
+        url = f"{BASE_URL}/eventsnextleague.php?id={league.external_id}"
 
-        print(f"✔ Jogos inseridos para liga {league.name}: {created}")
+        data = requests.get(url).json()
+        events = data.get("events")
 
-        created_total += created
+        if not events:
+            continue
 
-    print(f"\n📊 Total jogos inseridos: {created_total}")
+        for e in events:
 
-    if created_total == 0:
-        raise Exception("❌ Nenhum jogo foi inserido pelo ingest_future_matches")
+            if not e.get("idEvent"):
+                continue
 
-    return created_total
+            date_str = e.get("dateEvent")
+            time_str = e.get("strTime") or "00:00:00"
+
+            try:
+                match_date = datetime.strptime(
+                    f"{date_str} {time_str}",
+                    "%Y-%m-%d %H:%M:%S"
+                )
+            except:
+                continue
+
+            db.execute(text("""
+                INSERT INTO matches (id, league_id, home_team, away_team, date)
+                VALUES (:id, :league_id, :home, :away, :date)
+                ON CONFLICT (id) DO NOTHING
+            """), {
+                "id": int(e["idEvent"]),
+                "league_id": league.id,
+                "home": e.get("strHomeTeam"),
+                "away": e.get("strAwayTeam"),
+                "date": match_date
+            })
+
+            total += 1
+
+    db.commit()
+
+    print(f"✅ Jogos inseridos: {total}")

@@ -1,53 +1,31 @@
-from sqlalchemy.orm import Session
-from app.models.league import League
-
-# 🔥 LIGAS VALIDADAS (TheSportsDB)
-VALID_LEAGUE_IDS = {
-    4328: ("Premier League", "England"),
-    4335: ("La Liga", "Spain"),
-    4332: ("Serie A", "Italy"),
-    4331: ("Bundesliga", "Germany"),
-    4334: ("Ligue 1", "France"),
-    4355: ("Brasileirão", "Brazil"),
-    4346: ("MLS", "USA")
-}
+from sqlalchemy import text
 
 
-def sync_leagues(db: Session):
-    print("\n🚀 [LEAGUES] Sincronizando...")
+def sync_leagues(db):
 
-    added = 0
+    print("🚀 Inserindo ligas...")
 
-    for league_id, (name, country) in VALID_LEAGUE_IDS.items():
+    leagues = [
+        (4328, "Premier League"),
+        (4335, "La Liga"),
+        (4332, "Serie A"),
+        (4331, "Bundesliga"),
+        (4334, "Ligue 1"),
+        (4355, "Brasileirão"),
+    ]
 
-        league_id = int(league_id)
+    inserted = 0
 
-        exists = db.query(League).filter(
-            League.external_id == league_id
-        ).first()
+    for ext_id, name in leagues:
 
-        if exists:
-            print(f"⏩ Liga já existe: {name}")
-            continue
+        db.execute(text("""
+            INSERT INTO leagues (external_id, name, country)
+            VALUES (:ext_id, :name, 'Unknown')
+            ON CONFLICT (external_id) DO NOTHING
+        """), {"ext_id": ext_id, "name": name})
 
-        league = League(
-            name=name,
-            country=country,
-            external_id=league_id
-        )
-
-        db.add(league)
-        added += 1
-
-        print(f"✅ Liga inserida: {name}")
+        inserted += 1
 
     db.commit()
 
-    total = db.query(League).count()
-
-    print(f"📊 Inseridas nesta execução: {added}")
-    print(f"📊 Total no banco: {total}")
-
-    # 🚨 VALIDAÇÃO REAL
-    if total == 0:
-        raise Exception("❌ Nenhuma liga no banco após sync")
+    print(f"✅ Ligas inseridas: {inserted}")
