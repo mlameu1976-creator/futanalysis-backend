@@ -21,7 +21,5 @@ def get_db():
         db.close()
 
 
-# 🔥 IMPORTS NO FINAL (SEM CIRCULAR)
-import app.models.match
-import app.models.league
-import app.models.opportunity
+# 🔥 IMPORTA MODELS VIA __init__ (IMPORTANTE)
+import app.models
