@@ -10,8 +10,7 @@ class League(Base):
 
     name = Column(String)
     country = Column(String)
-
     external_id = Column(Integer, unique=True, index=True)
 
-    # ✅ RELACIONAMENTO CORRETO
+    # 🔥 RELACIONAMENTO BIDIRECIONAL CORRETO
     matches = relationship("Match", back_populates="league")

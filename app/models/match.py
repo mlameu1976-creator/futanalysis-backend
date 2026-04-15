@@ -12,11 +12,10 @@ class Match(Base):
 
     home_team = Column(String)
     away_team = Column(String)
-
     date = Column(DateTime)
 
-    # ✅ RELACIONAMENTO CORRETO (ESSA LINHA RESOLVE O ERRO)
+    # 🔥 ESSA LINHA É O QUE ESTÁ FALTANDO NO SEU SISTEMA
     league = relationship("League", back_populates="matches")
 
-    # (se existir)
+    # opcional (se existir Opportunity)
     opportunities = relationship("Opportunity", back_populates="match")
