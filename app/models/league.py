@@ -2,6 +2,8 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from app.database import Base
 
+print("🔥 LEAGUE MODEL CARREGADO - VERSÃO NOVA")
+
 
 class League(Base):
     __tablename__ = "leagues"

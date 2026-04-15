@@ -2,6 +2,8 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database import Base
 
+print("🔥 MATCH MODEL CARREGADO - VERSÃO NOVA")
+
 
 class Match(Base):
     __tablename__ = "matches"
