@@ -7,16 +7,10 @@ app = FastAPI()
 
 @app.on_event("startup")
 def startup():
-    print("🚀 Startup iniciado")
 
-    # 🔥 IMPORTA MODELS AQUI (CONTROLADO)
-    import app.models.match
-    import app.models.league
-    import app.models.opportunity
-
-    # 🔥 NÃO CHAMAR configure_mappers()
-    # 🔥 NÃO USAR RELATIONSHIPS
+    # 🔥 IMPORT CONTROLADO
+    from app.models.match import Match
+    from app.models.league import League
+    from app.models.opportunity import Opportunity
 
     Base.metadata.create_all(bind=engine)
-
-    print("✅ Banco pronto")
