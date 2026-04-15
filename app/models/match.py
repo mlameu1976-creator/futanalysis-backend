@@ -1,8 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
 from app.db.base import Base
-
-print("🔥 MATCH CERTO CARREGADO")
 
 
 class Match(Base):
@@ -15,14 +12,3 @@ class Match(Base):
     home_team = Column(String)
     away_team = Column(String)
     date = Column(DateTime)
-
-    # 🔥 REFERÊNCIA COMPLETA
-    league = relationship(
-        "app.models.league.League",
-        back_populates="matches"
-    )
-
-    opportunities = relationship(
-        "app.models.opportunity.Opportunity",
-        back_populates="match"
-    )
