@@ -1,37 +1,25 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import configure_mappers
 
-from app.database import Base, engine
+from app.database import engine
+from app.db.base import Base
 
-from app.api.routes.opportunities import router as opportunities_router
-from app.api.routes.predictions import router as predictions_router
-from app.api.routes.internal_generate_pipeline import router as pipeline_router
-# 🔥 IMPORTA TODOS OS MODELS (OBRIGATÓRIO)
-from app.models import match
-from app.models import league
-from app.models import opportunity
-# 🔥 IMPORTA TODOS OS MODELS (OBRIGATÓRIO)
-from app.models import Match, League, Opportunity
+# 🔥 IMPORTAR TODOS OS MODELS AQUI (CENTRALIZADO)
+import app.models.match
+import app.models.league
+import app.models.opportunity
 
-app = FastAPI(title="FutAnalysis API")
-
-# CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# ROTAS
-app.include_router(opportunities_router)
-app.include_router(predictions_router)
-app.include_router(pipeline_router)
+app = FastAPI()
 
 
-# 🔥 CRIA AS TABELAS AUTOMATICAMENTE
 @app.on_event("startup")
-def startup_event():
+def startup():
+    print("🚀 Inicializando aplicação...")
+
+    # 🔥 GARANTE QUE TODOS OS MAPPERS SEJAM RESOLVIDOS
+    configure_mappers()
+
+    # 🔥 CRIA TABELAS
     Base.metadata.create_all(bind=engine)
-    print("🔥 TABELAS CRIADAS COM SUCESSO")
+
+    print("✅ Mappers configurados e tabelas criadas")

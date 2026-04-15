@@ -4,8 +4,6 @@ import os
 
 from app.db.base import Base
 
-print("🔥 DATABASE_URL USADO:", os.getenv("DATABASE_URL"))
-
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(DATABASE_URL)
@@ -19,7 +17,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-# 🔥 IMPORTA MODELS VIA __init__ (IMPORTANTE)
-import app.models
