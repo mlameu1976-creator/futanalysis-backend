@@ -24,4 +24,7 @@ class Match(Base):
 
     league_id = Column(Integer, ForeignKey("leagues.id"))
 
+    # 🔥 NOME TEM QUE SER "league"
+    league = relationship("League", back_populates="matches")
+
     opportunities = relationship("Opportunity", back_populates="match")
