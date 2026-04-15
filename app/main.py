@@ -6,6 +6,10 @@ from app.database import Base, engine
 from app.api.routes.opportunities import router as opportunities_router
 from app.api.routes.predictions import router as predictions_router
 from app.api.routes.internal_generate_pipeline import router as pipeline_router
+# 🔥 IMPORTA TODOS OS MODELS (OBRIGATÓRIO)
+from app.models import match
+from app.models import league
+from app.models import opportunity
 
 app = FastAPI(title="FutAnalysis API")
 

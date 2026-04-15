@@ -7,7 +7,6 @@ class Match(Base):
     __tablename__ = "matches"
 
     id = Column(Integer, primary_key=True, index=True)
-
     external_id = Column(Integer, unique=True)
 
     home_team = Column(String)
@@ -17,14 +16,13 @@ class Match(Base):
     away_goals = Column(Integer, nullable=True)
 
     match_date = Column(DateTime)
-
     season = Column(Integer)
 
     is_finished = Column(Boolean, default=False)
 
     league_id = Column(Integer, ForeignKey("leagues.id"))
 
-    # 🔥 NOME TEM QUE SER "league"
+    # 🔥 ESSENCIAL
     league = relationship("League", back_populates="matches")
 
     opportunities = relationship("Opportunity", back_populates="match")

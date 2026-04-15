@@ -12,5 +12,5 @@ class League(Base):
     country = Column(String)
     external_id = Column(Integer, unique=True)
 
-    # 🔥 TEM QUE SER "matches"
+    # 🔥 ESSENCIAL
     matches = relationship("Match", back_populates="league")

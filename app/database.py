@@ -1,5 +1,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+# 🔥 IMPORTA TODOS OS MODELS (OBRIGATÓRIO)
+from app.models import match
+from app.models import league
+from app.models import opportunity
 import os
 
 print("🔥 DATABASE_URL USADO:", os.getenv("DATABASE_URL"))
