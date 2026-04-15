@@ -2,7 +2,7 @@ import requests
 from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy.dialects.postgresql import insert
-import pytz  # ✅ CORREÇÃO AQUI
+import pytz
 
 from app.models.match import Match
 from app.models.league import League
@@ -12,86 +12,88 @@ API_KEY = "844189"
 BASE_URL = f"https://www.thesportsdb.com/api/v1/json/{API_KEY}"
 
 
-def ingest_future_matches(db: Session):
+def ingest_future_matches(db: Session, league_id: int):
 
-    print("Buscando jogos futuros da API...")
+    print(f"📡 Buscando jogos futuros da liga {league_id}...")
 
-    leagues = db.query(League).all()
+    league = db.query(League).filter(
+        League.external_id == league_id
+    ).first()
+
+    if not league:
+        print("⚠️ Liga não encontrada no banco")
+        return 0
+
+    url = f"{BASE_URL}/eventsnextleague.php?id={league.external_id}"
+
+    try:
+        response = requests.get(url, timeout=30)
+        data = response.json()
+    except Exception as e:
+        print("❌ Erro API:", e)
+        return 0
+
+    events = data.get("events")
+
+    if not events:
+        print("⚠️ Nenhum evento retornado")
+        return 0
 
     rows = []
 
-    for league in leagues:
+    for event in events:
 
-        if not league.external_id:
+        event_id = event.get("idEvent")
+
+        if not event_id:
             continue
 
-        url = f"{BASE_URL}/eventsnextleague.php?id={league.external_id}"
+        date_str = event.get("dateEvent")
+        time_str = event.get("strTime") or "00:00:00"
+
+        if not date_str:
+            continue
 
         try:
-            response = requests.get(url, timeout=30)
-            data = response.json()
+            utc_datetime = datetime.strptime(
+                f"{date_str} {time_str}",
+                "%Y-%m-%d %H:%M:%S"
+            )
+
+            utc = pytz.utc
+            brasil = pytz.timezone("America/Sao_Paulo")
+
+            utc_datetime = utc.localize(utc_datetime)
+            match_date = utc_datetime.astimezone(brasil)
+
         except Exception as e:
-            print("Erro API:", e)
+            print("❌ Erro ao converter data:", e)
             continue
 
-        events = data.get("events")
+        rows.append({
+            # 🔥 IMPORTANTE: usar id direto
+            "id": int(event_id),
 
-        if not events:
-            continue
+            "league_id": league.id,
+            "home_team": event.get("strHomeTeam"),
+            "away_team": event.get("strAwayTeam"),
 
-        for event in events:
-
-            event_id = event.get("idEvent")
-
-            if not event_id:
-                continue
-
-            date_str = event.get("dateEvent")
-            time_str = event.get("strTime") or "00:00:00"
-
-            if not date_str:
-                continue
-
-            try:
-                # 🔥 UTC vindo da API
-                utc_datetime = datetime.strptime(
-                    f"{date_str} {time_str}",
-                    "%Y-%m-%d %H:%M:%S"
-                )
-
-                # 🔥 CONVERSÃO PARA BRASIL
-                utc = pytz.utc
-                brasil = pytz.timezone("America/Sao_Paulo")
-
-                utc_datetime = utc.localize(utc_datetime)
-                match_date = utc_datetime.astimezone(brasil)
-
-            except Exception as e:
-                print("Erro ao converter data:", e)
-                continue
-
-            rows.append({
-                "external_id": int(event_id),
-                "league_id": league.id,
-                "home_team": event.get("strHomeTeam"),
-                "away_team": event.get("strAwayTeam"),
-                "match_date": match_date,
-                "season": event.get("strSeason"),
-                "home_goals": None,
-                "away_goals": None,
-                "is_finished": False,
-            })
+            # 🔥 NOME CORRETO DO CAMPO
+            "date": match_date
+        })
 
     if not rows:
-        print("Nenhum jogo retornado pela API")
+        print("⚠️ Nenhum jogo válido após processamento")
         return 0
 
     stmt = insert(Match).values(rows)
-    stmt = stmt.on_conflict_do_nothing(index_elements=["external_id"])
+
+    # 🔥 CONFLITO PELO ID (PK)
+    stmt = stmt.on_conflict_do_nothing(index_elements=["id"])
 
     db.execute(stmt)
     db.commit()
 
-    print("Jogos processados:", len(rows))
+    print(f"✅ Jogos inseridos: {len(rows)}")
 
     return len(rows)
