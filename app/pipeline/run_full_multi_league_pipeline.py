@@ -24,5 +24,3 @@ def run_pipeline():
         db.close()
 
 
-if __name__ == "__main__":
-    run_pipeline()
