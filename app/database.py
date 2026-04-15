@@ -6,18 +6,20 @@ print("🔥 DATABASE_URL USADO:", os.getenv("DATABASE_URL"))
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# 🔥 BASE DEVE VIR ANTES DE TUDO
+# ✅ BASE PRIMEIRO (OBRIGATÓRIO)
 Base = declarative_base()
 
+# ✅ ENGINE
 engine = create_engine(DATABASE_URL)
 
+# ✅ SESSION
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-# 🔥 AGORA IMPORTA OS MODELS (ORDEM CORRETA)
-from app.models.match import Match
-from app.models.league import League
-from app.models.opportunity import Opportunity
+# ✅ IMPORTAÇÃO EXPLÍCITA DOS MODELS (SEM AMBIGUIDADE)
+import app.models.match
+import app.models.league
+import app.models.opportunity
 
 
 def get_db():

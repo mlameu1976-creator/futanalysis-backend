@@ -14,8 +14,7 @@ class Match(Base):
     away_team = Column(String)
     date = Column(DateTime)
 
-    # 🔥 ESSA LINHA É O QUE ESTÁ FALTANDO NO SEU SISTEMA
+    # 🔥 ESSENCIAL
     league = relationship("League", back_populates="matches")
 
-    # opcional (se existir Opportunity)
     opportunities = relationship("Opportunity", back_populates="match")
