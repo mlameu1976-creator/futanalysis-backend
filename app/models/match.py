@@ -1,3 +1,5 @@
+raise Exception("🚨 ESTE MATCH.PY ESTÁ SENDO USADO")
+
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 
