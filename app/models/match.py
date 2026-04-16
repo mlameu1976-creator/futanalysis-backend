@@ -45,3 +45,5 @@ class Match(Base):
         "Opportunity",
         back_populates="match"
     )
+
+    print("🔥 MATCH MODEL CARREGADO COM LEAGUE:", hasattr(Match, "league"))
