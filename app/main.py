@@ -1,13 +1,12 @@
 from fastapi import FastAPI
 
-from app.models import base
-from sqlalchemy.orm import configure_mappers
-from app.models import *
+# 🔥 IMPORTAR MODELS PRIMEIRO (CRÍTICO)
+import app.models.load_models
 
+from sqlalchemy.orm import configure_mappers
 configure_mappers()
 
 app = FastAPI()
-
 
 @app.get("/")
 def root():
