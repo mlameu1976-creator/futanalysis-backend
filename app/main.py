@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.models import base
 from sqlalchemy.orm import configure_mappers
+from app.models import *
 
 configure_mappers()
 
