@@ -1,10 +1,9 @@
 from fastapi import FastAPI
 
-from app.database import Base, engine
-
 from app.models import *
+from sqlalchemy.orm import configure_mappers
 
-Base.metadata.create_all(bind=engine)
+configure_mappers()
 
 app = FastAPI()
 
