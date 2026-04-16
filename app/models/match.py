@@ -1,14 +1,47 @@
-from sqlalchemy import Column, Integer, String, DateTime
-from app.db.base import Base
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
+
+from app.database import Base
 
 
 class Match(Base):
+
     __tablename__ = "matches"
 
     id = Column(Integer, primary_key=True)
 
-    league_id = Column(Integer)  # 🔥 sem FK por enquanto
+    external_id = Column(String, unique=True)
+
+    league_id = Column(Integer, ForeignKey("leagues.id"))
+
+    season = Column(String)
 
     home_team = Column(String)
     away_team = Column(String)
-    date = Column(DateTime)
+
+    match_date = Column(DateTime)
+
+    status = Column(String)
+
+    is_finished = Column(Boolean, default=False)
+
+    home_goals = Column(Integer)
+    away_goals = Column(Integer)
+
+    btts = Column(Boolean)
+    over_15 = Column(Boolean)
+    over_25 = Column(Boolean)
+
+    # 🔥 RELACIONAMENTO CORRETO
+    league = relationship("League", back_populates="matches")
+
+    pre_match_features = relationship(
+        "PreMatchFeatures",
+        back_populates="match",
+        uselist=False
+    )
+
+    opportunities = relationship(
+        "Opportunity",
+        back_populates="match"
+    )
