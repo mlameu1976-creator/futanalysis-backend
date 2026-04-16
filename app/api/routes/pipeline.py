@@ -1,7 +1,31 @@
-from fastapi import APIRouter
+from app.database import SessionLocal
+from app.pipeline.sync_leagues import sync_leagues
+from app.pipeline.sync_matches import sync_matches
+from app.pipeline.generate_opportunities import generate_opportunities
 
-router = APIRouter()
+# 🔥 ADICIONE ISSO
+from app.models import base
+from sqlalchemy.orm import configure_mappers
 
-@router.get("/run-pipeline")
+
 def run_pipeline():
-    return {"status": "DESATIVADO"}
+
+    print("🚀 INICIANDO PIPELINE...")
+
+    # 🔥 GARANTE QUE O ORM ESTÁ PRONTO
+    configure_mappers()
+
+    db = SessionLocal()
+
+    try:
+        sync_leagues(db)
+        sync_matches(db)
+        generate_opportunities(db)
+
+        print("✅ PIPELINE FINALIZADO")
+
+    except Exception as e:
+        print("❌ ERRO NO PIPELINE:", e)
+
+    finally:
+        db.close()
