@@ -115,7 +115,7 @@ def run_opportunity_engine(db: Session):
 
     features = (
         db.query(PreMatchFeatures)
-        .options(joinedload(PreMatchFeatures.match).joinedload(Match.league))
+        .options(joinedload(PreMatchFeatures.match))
         .all()
     )
 
