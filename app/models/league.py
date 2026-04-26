@@ -1,5 +1,4 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship
 
 from app.database import Base
 
@@ -15,5 +14,3 @@ class League(Base):
     country = Column(String)
 
     external_id = Column(String, unique=True, index=True)
-
-    matches = relationship("Match", back_populates="league")

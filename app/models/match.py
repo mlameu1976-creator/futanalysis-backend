@@ -1,5 +1,4 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
 
 from app.database import Base
 
@@ -31,8 +30,6 @@ class Match(Base):
     btts = Column(Boolean)
     over_15 = Column(Boolean)
     over_25 = Column(Boolean)
-
-    league = relationship("League", back_populates="matches")
 
     pre_match_features = relationship(
         "PreMatchFeatures",
