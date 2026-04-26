@@ -32,7 +32,7 @@ class Match(Base):
     over_15 = Column(Boolean)
     over_25 = Column(Boolean)
 
-    league = relationship("League")
+    league = relationship("League", back_populates="matches")
 
     pre_match_features = relationship(
         "PreMatchFeatures",
