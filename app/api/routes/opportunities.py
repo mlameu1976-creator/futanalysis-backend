@@ -30,9 +30,10 @@ def get_opportunities(
             Opportunity.probability,
         )
         .join(Match, Opportunity.match_id == Match.id)
+        .join(League, Match.league_id == League.id)
 
         # 🔥 JOIN CORRETO (external_id)
-        .join(League, Match.league_id == League.external_id)
+        .join(League, Match.league_id == League.id)
 
         # impedir jogos antigos
         .filter(func.date(Match.match_date) >= func.current_date())
