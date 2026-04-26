@@ -28,4 +28,4 @@ class PreMatchFeatures(Base):
     prob_away_win = Column(Float)
     prob_under_25 = Column(Float)
 
-    match = relationship("Match")
+    match = relationship("Match", back_populates="pre_match_features")
