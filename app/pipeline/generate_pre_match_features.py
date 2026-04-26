@@ -1,43 +1,33 @@
 from sqlalchemy.orm import Session
-
-from app.database import SessionLocal
 from app.models.match import Match
-from app.services.pre_match_features_service import PreMatchFeaturesService
+from app.models.pre_match_features import PreMatchFeatures
 
 
-def generate_pre_match_features():
-
-    print("GERANDO FEATURES FUTANALYSIS...")
-
-    db: Session = SessionLocal()
-
-    service = PreMatchFeaturesService(db)
+def generate_pre_match_features(db: Session):
+    print("🔥 NOVA VERSÃO ATIVA")
 
     matches = db.query(Match).all()
 
-    total = len(matches)
-
-    print(f"TOTAL MATCHES ENCONTRADOS: {total}")
-
-    processed = 0
-
     for match in matches:
+        existing = (
+            db.query(PreMatchFeatures)
+            .filter(PreMatchFeatures.match_id == match.id)
+            .first()
+        )
 
-        service.generate_features_for_match(match)
+        if existing:
+            continue
 
-        processed += 1
+        feature = PreMatchFeatures(
+            match_id=match.id,
+            avg_goals_home=0,
+            avg_goals_away=0,
+            form_home=0,
+            form_away=0,
+        )
 
-        if processed % 1000 == 0:
-            print(f"{processed} matches processados")
+        db.add(feature)
 
     db.commit()
 
-    print(f"PROCESSAMENTO FINALIZADO: {processed}")
-
-
-def run():
-    generate_pre_match_features()
-
-
-if __name__ == "__main__":
-    run()
+    print("✅ FEATURES GERADAS")

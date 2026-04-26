@@ -1,4 +1,14 @@
+<<<<<<< HEAD
 fastapi==0.110.0
 uvicorn==0.27.1
 requests==2.31.0
 python-dotenv==1.0.1
+=======
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+python-dotenv
+pydantic
+requests
+>>>>>>> 9ddbf4c025b4624a2b344cf695f78dc35ed5126d
