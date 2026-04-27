@@ -8,9 +8,7 @@ from app.models.match import Match
 from app.models.opportunity import Opportunity
 from app.models.league import League
 
-
 router = APIRouter()
-
 
 @router.get("/opportunities")
 def get_opportunities(
@@ -18,7 +16,6 @@ def get_opportunities(
     limit: int = Query(500),
     db: Session = Depends(get_db)
 ):
-
     query = (
         db.query(
             Opportunity.id,
@@ -31,34 +28,19 @@ def get_opportunities(
         )
         .join(Match, Opportunity.match_id == Match.id)
         .join(League, Match.league_id == League.id)
-
-        # 🔥 JOIN CORRETO (external_id)
-        .join(League, Match.league_id == League.id)
-
-        # impedir jogos antigos
         .filter(func.date(Match.match_date) >= func.current_date())
     )
-
-    # -----------------------------
-    # FILTRO DE DATA
-    # -----------------------------
 
     if date == "today":
         query = query.filter(
             func.date(Match.match_date) == func.current_date()
         )
-
     elif date == "tomorrow":
         query = query.filter(
             func.date(Match.match_date) == func.current_date() + 1
         )
 
-    # ordenação
-    query = query.order_by(Match.match_date.asc())
-
-    # limite (performance)
-    query = query.limit(limit)
-
+    query = query.order_by(Match.match_date.asc()).limit(limit)
     results = query.all()
 
     return [
