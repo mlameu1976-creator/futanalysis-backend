@@ -1,11 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.models import match, league, opportunity, team_stats, historical_match, pre_match_features, opportunity_result
-
-from sqlalchemy.orm import configure_mappers
-configure_mappers()
-
 from app.api.routes.opportunities import router as opportunities_router
 from app.api.routes.predictions import router as predictions_router
 from app.api.routes.internal_generate_pipeline import router as pipeline_router
