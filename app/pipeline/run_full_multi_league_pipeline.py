@@ -8,6 +8,11 @@ from app.pipeline.sync_matches import sync_matches
 from app.pipeline.run_opportunity_pipeline import run_opportunity_pipeline
 from app.services.pre_match_features_service import generate_pre_match_features
 
+from app.database import Base, engine
+
+# GARANTE QUE AS TABELAS EXISTAM
+Base.metadata.create_all(bind=engine)
+
 
 def run_pipeline():
 

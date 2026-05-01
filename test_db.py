@@ -1,11 +1,13 @@
-from sqlalchemy import create_engine
+from app.database import SessionLocal
+from app.models.match_cards import MatchCards
 
-DATABASE_URL = "postgresql://postgres:452576@localhost:5432/futanalysis"
+db = SessionLocal()
 
-try:
-    engine = create_engine(DATABASE_URL)
-    conn = engine.connect()
-    print("✅ CONECTOU COM SUCESSO")
-    conn.close()
-except Exception as e:
-    print("❌ ERRO:", e)
+data = db.query(MatchCards).all()
+
+print(f"Total registros: {len(data)}")
+
+for row in data[:5]:
+    print(row.id, row.match_id, row.home_cards, row.away_cards)
+
+db.close()
